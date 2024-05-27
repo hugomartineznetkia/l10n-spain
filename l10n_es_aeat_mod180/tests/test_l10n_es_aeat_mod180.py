@@ -1,11 +1,14 @@
 # © 2024 Marián Cuadra <marian.cuadra@netkia.es>
 # License AGPL-3 - See http://www.gnu.org/licenses/agpl-3.0
+import logging
 
 from odoo import exceptions
 
 from odoo.addons.l10n_es_aeat.tests.test_l10n_es_aeat_mod_base import (
     TestL10nEsAeatModBase,
 )
+
+_logger = logging.getLogger("aeat")
 
 
 class TestL10nEsAeatMod180Base(TestL10nEsAeatModBase):
@@ -35,6 +38,41 @@ class TestL10nEsAeatMod180Base(TestL10nEsAeatModBase):
             + (2 * 840)  # P_IRPF20A, P_IRPF21A
         ),
     }
+
+    @classmethod
+    def _invoice_purchase_create_with_real_state(cls, dt, extra_vals=None):
+        data = {
+            "company_id": cls.company.id,
+            "partner_id": cls.supplier.id,
+            "invoice_date": dt,
+            "move_type": "in_invoice",
+            "journal_id": cls.journal_purchase.id,
+            "invoice_line_ids": [],
+        }
+        _logger.debug("Creating purchase invoice: date = %s" % dt)
+        if cls.debug:
+            _logger.debug("{:>14} {:>9}".format("PURCHASE TAX", "PRICE"))
+        for desc, values in cls.taxes_purchase.items():
+            if cls.debug:
+                _logger.debug("{:>14} {:>9}".format(desc, values[0]))
+            # Allow to duplicate taxes skipping the unique key constraint
+            line_data = {
+                "name": "Test for tax(es) %s" % desc,
+                "account_id": cls.accounts["600000"].id,
+                "price_unit": values[0],
+                "quantity": 1,
+            }
+            taxes = cls._get_taxes(desc.split("//")[0])
+            if taxes:
+                line_data["tax_ids"] = [(4, t.id) for t in taxes]
+            data["invoice_line_ids"].append((0, 0, line_data))
+        if extra_vals:
+            data.update(extra_vals)
+        inv = cls.env["account.move"].with_user(cls.billing_user).create(data)
+        inv.sudo().action_post()  # FIXME: Why do we need to do it as sudo?
+        if cls.debug:
+            cls._print_move_lines(inv.line_ids)
+        return inv
 
     @classmethod
     def _create_model_180(cls):
