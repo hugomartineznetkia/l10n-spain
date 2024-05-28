@@ -60,7 +60,6 @@ class TestL10nEsAeatMod180Base(TestL10nEsAeatModBase):
             "number": 5,
             "state_id": state_id.id,
             "township_id": township_id.id,
-            "city": "Torrelavega",
             "postal_code": "39300",
             "real_estate_situation": "1",
             "reference": ref,
@@ -103,7 +102,7 @@ class TestL10nEsAeatMod180Base(TestL10nEsAeatModBase):
         if extra_vals:
             data.update(extra_vals)
         inv = cls.env["account.move"].with_user(cls.billing_user).create(data)
-        inv.sudo().action_post()  # FIXME: Why do we need to do it as sudo?
+        inv.action_post()
         if cls.debug:
             cls._print_move_lines(inv.line_ids)
         return inv
