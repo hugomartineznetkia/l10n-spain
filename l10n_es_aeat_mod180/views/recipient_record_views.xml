@@ -34,6 +34,7 @@
                     name="action_get_base_move_lines"
                     type="object"
                     icon="fa-search-plus"
+                    title="search-plus"
                 />
                 <field name="retentions_fee" />
                 <field name="retentions_percentage" />

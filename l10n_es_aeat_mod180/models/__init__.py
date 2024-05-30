@@ -1,5 +1,5 @@
 from . import l10n_es_aeat_real_estate
-from . import l10n_es_aeat_mod180_report
+from . import mod180
 from . import res_partner
 from . import l10n_es_aeat_map_tax
 from . import account_move_line

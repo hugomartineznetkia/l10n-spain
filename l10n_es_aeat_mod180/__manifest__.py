@@ -16,7 +16,7 @@
         "security/ir.model.access.csv",
         "security/l10n_es_aeat_mod180_security.xml",
         "views/res_partner_views.xml",
-        "views/mod180_views.xml",
+        "views/mod180_view.xml",
         "views/account_move_views.xml",
         "views/account_move_line_views.xml",
         "views/recipient_record_views.xml",

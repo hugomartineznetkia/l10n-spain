@@ -124,8 +124,14 @@ class L10nEsAeatMod180Report(models.Model):
 
     @api.depends("tax_line_ids", "tax_line_ids.move_line_ids")
     def _compute_casilla_01(self):
+        casillas = (2, 3)
         for report in self:
-            report.casilla_01 = len(report.recipient_record_ids)
+            tax_lines = report.tax_line_ids.filtered(
+                lambda x: x.field_number in casillas
+            )
+            report.casilla_01 = len(
+                tax_lines.mapped("move_line_ids").mapped("partner_id")
+            )
 
     @api.depends("tax_line_ids", "tax_line_ids.amount")
     def _compute_casilla_02(self):
@@ -173,7 +179,6 @@ class L10nEsAeatMod180Report(models.Model):
     def calculate(self):
         res = super().calculate()
         self._crear_registros_percetores()
-        self.refresh()
         for rec in self:
             if rec.casilla_05 <= 0.0:
                 rec.tipo_declaracion = "N"

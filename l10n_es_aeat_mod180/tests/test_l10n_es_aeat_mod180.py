@@ -39,20 +39,21 @@ class TestL10nEsAeatMod180Base(TestL10nEsAeatModBase):
         ),
     }
 
-    references = [
-        "8374992BV4192Q4560EG",
-        "7466896WH0452Y6611MK",
-        "5910144GZ3516I1918GW",
-        "0982928DM2611S1798DJ",
-    ]
+    # Referencias catastrales generadas aleatoriamente
+    references = {
+        1: "8374992BV4192Q4560EG",
+        2: "7466896WH0452Y6611MK",
+        3: "5910144GZ3516I1918GW",
+        4: "0982928DM2611S1798DJ",
+    }
 
     @classmethod
     def _real_estate_create(cls, reference):
         state_id = cls.env.ref("base.state_es_s")
         township_id = cls.env.ref("l10n_es_aeat.l10n_es_aeat_township_39087")
-        ref = cls.references[reference]
+        ref = cls.references.get(reference)
         data = {
-            "name": "Inmueble 1",
+            "name": "Inmueble %i" % reference,
             "partner_id": cls.supplier.id,
             "address_type": "CALLE",
             "address": "Paseo del niño",
@@ -60,13 +61,16 @@ class TestL10nEsAeatMod180Base(TestL10nEsAeatModBase):
             "number": 5,
             "state_id": state_id.id,
             "township_id": township_id.id,
+            "city": "Torrelavega",
             "postal_code": "39300",
             "real_estate_situation": "1",
             "reference": ref,
         }
         _logger.debug("Creating real estate: reference = %s" % ref)
         re = (
-            cls.env["l10n.es.aeat.real_estate"].with_user(cls.billing_user).create(data)
+            cls.env["l10n.es.aeat.real_estate"]
+            .with_user(cls.account_manager)
+            .create(data)
         )
         return re
 
@@ -93,7 +97,7 @@ class TestL10nEsAeatMod180Base(TestL10nEsAeatModBase):
                 "account_id": cls.accounts["600000"].id,
                 "price_unit": values[0],
                 "quantity": 1,
-                "selectable_real_estate_ids": (6, 0, re.ids),
+                "selectable_real_estate_ids": [(4, re.id)],
             }
             taxes = cls._get_taxes(desc.split("//")[0])
             if taxes:
@@ -133,9 +137,9 @@ class TestL10nEsAeatMod180Base(TestL10nEsAeatModBase):
 
     def test_model_180(self):
         # Purchase invoices
-        self._invoice_purchase_create_with_real_state("2023-01-01", 0)
-        self._invoice_purchase_create_with_real_state("2023-04-02", 1)
-        purchase = self._invoice_purchase_create_with_real_state("2023-06-03", 2)
+        self._invoice_purchase_create_with_real_state("2023-01-01", 1)
+        self._invoice_purchase_create_with_real_state("2023-04-02", 2)
+        purchase = self._invoice_purchase_create_with_real_state("2023-06-03", 3)
         self._invoice_refund(purchase, "2023-01-18")
         self.model180 = self._create_model_180()
         self.model180.button_calculate()
@@ -171,7 +175,7 @@ class TestL10nEsAeatMod180Base(TestL10nEsAeatModBase):
 
     def test_negative_model_180(self):
         # Make the invoice in a different period for having negative result
-        purchase = self._invoice_purchase_create_with_real_state("2023-01-01", 3)
+        purchase = self._invoice_purchase_create_with_real_state("2023-01-01", 4)
         self._invoice_refund(purchase, "2023-11-18")
         self.model180 = self._create_model_180()
         self.model180.button_calculate()

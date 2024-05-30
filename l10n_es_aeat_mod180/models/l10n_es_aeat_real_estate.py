@@ -17,7 +17,6 @@ class L10nEsAeatRealEstate(models.Model):
         if not self.reference:
             real_estate_situation = "4"
         elif self.postal_code:
-
             # Situacion inmueble
             if (
                 self.state_id
